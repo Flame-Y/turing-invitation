@@ -1,9 +1,11 @@
 import "./App.css";
 import Envelope from "./components/envelope";
+import Particles from "./pages/particles";
 const App = () => {
   return (
     <div className="layout">
-      <Envelope />
+      {/* <Envelope /> */}
+      <Particles />
     </div>
   );
 };
