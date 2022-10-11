@@ -3,8 +3,17 @@ import "./index.scss";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass'
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+import { FocusShader } from 'three/examples/jsm/shaders/FocusShader'
+
 import Tween from "@tweenjs/tween.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
+
+import g from '../../images/gradient.png'
 
 class ThreeDWorld {
   constructor(canvasContainer) {
@@ -18,6 +27,8 @@ class ThreeDWorld {
     this.initStats();
     // 物体添加
     this.addObjs();
+    // 效果器
+    this.createEffect()
     // 轨道控制插件（鼠标拖拽视角、缩放等）
     this.orbitControls = new OrbitControls(
       this.camera,
@@ -33,7 +44,7 @@ class ThreeDWorld {
     // 创建场景
     this.scene = new THREE.Scene();
     // 在场景中添加雾的效果，参数分别代表‘雾的颜色’、‘开始雾化的视线距离’、刚好雾化至看不见的视线距离’
-    this.scene.fog = new THREE.Fog(0x090918, 1, 600);
+    this.scene.fog = new THREE.Fog(0x05050c, 1, 600);
     // 创建相机
     let aspectRatio = this.WIDTH / this.HEIGHT;
     let fieldOfView = 60;
@@ -64,6 +75,8 @@ class ThreeDWorld {
       // 开启抗锯齿
       antialias: true,
     });
+    // 自动清理，解决 bloomPass 效果器冲突
+    this.renderer.autoClear = false
     // 渲染背景颜色同雾化的颜色
     this.renderer.setClearColor(this.scene.fog.color);
     // 定义渲染器的尺寸；在这里它会填满整个屏幕
@@ -148,6 +161,7 @@ class ThreeDWorld {
       sizeAttenuation: true,
       transparent: true,
       opacity: 1,
+      map: new THREE.TextureLoader().load(g),
     });
     const vertices = [];
     for (let i = 0; i < 30000; i++) {
@@ -164,9 +178,16 @@ class ThreeDWorld {
     const points = new THREE.Points(geometry, pointMaterial);
     this.scene.add(points);
     // 读取模型
-    loader.load(require("../../models/static/banana.obj"), (obj) => {
-      console.log(obj);
-      this.scene.add(obj);
+    loader.load(require("../../models/static/turing.obj"), (obj) => {
+      // console.log(obj);
+      // this.scene.add(obj);
+      for (const i of obj.children) {
+        console.log(i);
+        const pointGeometry = i.geometry
+        // pointGeometry.scale(800, 800, 800)
+        const Point = new THREE.Points(pointGeometry, pointMaterial)
+        this.scene.add(Point)
+      }
       const startPositions = geometry.getAttribute("position");
       const destPosition = obj.children[0].geometry.getAttribute("position");
       for (let i = 0; i < startPositions.count; i++) {
@@ -191,6 +212,21 @@ class ThreeDWorld {
       }
     });
   }
+  createEffect() {
+    this.composer = new EffectComposer(this.renderer)
+    const renderPass = new RenderPass(this.scene, this.camera)
+    const bloomPass = new BloomPass(0.75)
+    const filmPass = new FilmPass(0.5, 0.5, 1500, false)
+    const shaderPass = new ShaderPass(FocusShader)
+    shaderPass.uniforms.screenWidth.value = window.innerWidth;
+    shaderPass.uniforms.screenHeight.value = window.innerHeight;
+    shaderPass.renderToScreen = true
+
+    this.composer.addPass(renderPass)
+    this.composer.addPass(bloomPass)
+    this.composer.addPass(filmPass)
+    this.composer.addPass(shaderPass)
+  }
   // 循环更新渲染
   update() {
     // 动画插件
@@ -198,8 +234,10 @@ class ThreeDWorld {
     // 性能监测插件
     this.stats.update();
     // 渲染器执行渲染
-    this.renderer.render(this.scene, this.camera);
-    this.scene.rotation.y += 0.005;
+    // this.renderer.render(this.scene, this.camera);
+    // 效果器执行渲染，如果不需要效果器请使用上方的渲染模式
+    this.composer.render(this.scene, this.camera);
+    // this.scene.rotation.y += 0.005;
     // 循环调用
     requestAnimationFrame(() => {
       this.update();
