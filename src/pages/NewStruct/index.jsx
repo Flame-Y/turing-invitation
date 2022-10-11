@@ -24,9 +24,6 @@ const _MODEL_PATH_ = [
   // require("../../models/examples/AngularSphere.obj"),
 ]
 
-// 加个动画数组
-const $TweenArray = []
-
 class ParticleSystem {
   // 新编写的物体添加核心
   /** @param {HTMLCanvasElement} canvas 画布元素 */
@@ -219,20 +216,19 @@ class ParticleSystem {
     const sourceModel = this.AnimateEffectParticle.geometry.getAttribute('position')
 
     for (var i = 0; i < this.maxParticlesCount; i++) {
-      if (!$TweenArray[i]) $TweenArray[i] = new Tween.Tween(sourceModel.array);
+      const tween = new Tween.Tween(sourceModel.array);
       const cur = i % targetModel.count;
-      $TweenArray[i].stop().to(
+      tween.stop().to(
         {
           [i * 3]: targetModel.array[cur * 3],
           [i * 3 + 1]: targetModel.array[cur * 3 + 1],
           [i * 3 + 2]: targetModel.array[cur * 3 + 2],
         },
         2000
-      ).easing(Tween.Easing.Exponential.InOut).start().onUpdate(function () {
+      ).delay(2000 * Math.random()).easing(Tween.Easing.Exponential.In).start().onUpdate(function () {
         sourceModel.needsUpdate = true;
       });
     }
-    // console.log($TweenArray);
   }
 
   // 循环更新渲染
