@@ -19,10 +19,12 @@ class ThreeDWorld {
   constructor(canvasContainer) {
     // canvas容器
     this.container = canvasContainer || document.body;
+    // 模型列表
+    this.modelList = []
     // 创建场景
     this.createScene();
     // 创建灯光
-    this.createLights();
+    // this.createLights();
     // 性能监控插件
     this.initStats();
     // 物体添加
@@ -35,6 +37,8 @@ class ThreeDWorld {
       this.renderer.domElement
     );
     this.orbitControls.autoRotate = true;
+    // 阻尼器，让场景移动时具有缓动效果
+    // this.orbitControls.enableDamping = true
     // 循环更新渲染场景
     this.update();
   }
@@ -164,10 +168,10 @@ class ThreeDWorld {
       map: new THREE.TextureLoader().load(g),
     });
     const vertices = [];
-    for (let i = 0; i < 30000; i++) {
-      const x = THREE.MathUtils.randFloatSpread(2000);
-      const y = THREE.MathUtils.randFloatSpread(2000);
-      const z = THREE.MathUtils.randFloatSpread(2000);
+    for (let i = 0; i < 8000; i++) {
+      const x = THREE.MathUtils.randFloatSpread(350);
+      const y = THREE.MathUtils.randFloatSpread(350);
+      const z = THREE.MathUtils.randFloatSpread(350);
       vertices.push(x, y, z);
     }
     const geometry = new THREE.BufferGeometry();
@@ -179,17 +183,24 @@ class ThreeDWorld {
     this.scene.add(points);
     // 读取模型
     loader.load(require("../../models/static/turing.obj"), (obj) => {
-      // console.log(obj);
-      // this.scene.add(obj);
+      // 最终模型
+      const finalGeometry = new THREE.BufferGeometry()
+      let finalVertices = new Float32Array([])
+      // 模型合并
       for (const i of obj.children) {
-        console.log(i);
-        const pointGeometry = i.geometry
+        const arr = i.geometry.attributes.position.array
+        finalVertices = new Float32Array([...finalVertices, ...arr])
         // pointGeometry.scale(800, 800, 800)
-        const Point = new THREE.Points(pointGeometry, pointMaterial)
-        this.scene.add(Point)
+        // const Point = new THREE.Points(pointGeometry, pointMaterial)
+        // this.scene.add(Point)
       }
+      finalGeometry.setAttribute('position', new THREE.BufferAttribute(finalVertices, 3))
+      const finalPoints = new THREE.Points(finalGeometry, pointMaterial)
+      // this.scene.add(finalPoints)
+
       const startPositions = geometry.getAttribute("position");
-      const destPosition = obj.children[0].geometry.getAttribute("position");
+      const destPosition = finalGeometry.getAttribute("position");
+
       for (let i = 0; i < startPositions.count; i++) {
         const tween = new Tween.Tween(startPositions.array);
         const cur = i % destPosition.count;
@@ -199,10 +210,10 @@ class ThreeDWorld {
             [i * 3 + 1]: destPosition.array[cur * 3 + 1],
             [i * 3 + 2]: destPosition.array[cur * 3 + 2],
           },
-          3000 * Math.random()
+          2000
         );
         tween.easing(Tween.Easing.Exponential.In);
-        tween.delay(3000);
+        tween.delay(2000 * Math.random());
 
         tween.start();
 
@@ -212,6 +223,7 @@ class ThreeDWorld {
       }
     });
   }
+  // 效果器
   createEffect() {
     this.composer = new EffectComposer(this.renderer)
     const renderPass = new RenderPass(this.scene, this.camera)
@@ -233,6 +245,7 @@ class ThreeDWorld {
     Tween.update();
     // 性能监测插件
     this.stats.update();
+    // this.orbitControls.update()
     // 渲染器执行渲染
     // this.renderer.render(this.scene, this.camera);
     // 效果器执行渲染，如果不需要效果器请使用上方的渲染模式
