@@ -65,7 +65,7 @@ body {
 
 .tag {
   position: absolute;
-  z-index: 114;
+  z-index: 514;
   left: 50%;
   margin-left: -36px;
   top: 120px;
@@ -149,6 +149,7 @@ body {
   100% {
     transform: scaleY(1) translateY(-80px);
     opacity: 1;
+    background-color: #05050c;
   }
 }
 
@@ -175,6 +176,6 @@ body {
     opacity: 1;
   }
   100% {
-    transform: translateY(25px);
+    transform: translateY(75px);
   }
 }

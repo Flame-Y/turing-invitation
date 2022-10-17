@@ -1,12 +1,13 @@
 import React, { useState } from "react";
+import eventBus from "../../util/event";
 
 import "./index.scss";
-
 const Envelope = () => {
   const [active, setActive] = useState(false);
 
   const handleOpen = () => {
     setActive(true);
+    eventBus.emit("message", "hello world");
   };
   return (
     <div className="layout">
@@ -14,12 +15,6 @@ const Envelope = () => {
         <div className="top"></div>
         <div className="tag" onClick={handleOpen}>
           <img className="logo" src={require("../../images/队徽.png")} alt="" />
-          {/* <img
-            className="mini"
-            style={{ display: active ? "" : "none" }}
-            src={require("../../images/TR_logo.png")}
-            alt=""
-          /> */}
         </div>
         <div className="card"></div>
       </div>

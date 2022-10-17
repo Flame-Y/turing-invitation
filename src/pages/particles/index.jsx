@@ -1,34 +1,38 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./index.scss";
+import eventBus from "../../util/event";
+
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass'
-import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
-import { FocusShader } from 'three/examples/jsm/shaders/FocusShader'
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { BloomPass } from "three/examples/jsm/postprocessing/BloomPass";
+import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { FocusShader } from "three/examples/jsm/shaders/FocusShader";
 
 import Tween from "@tweenjs/tween.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 
-import g from '../../images/gradient.png'
+import g from "../../images/gradient.png";
 
+const _MODEL_PATH_ = [
+  require("../../models/static/turing4.obj"),
+  require("../../models/static/banana.obj"),
+];
 class ThreeDWorld {
   constructor(canvasContainer) {
     // canvas容器
     this.container = canvasContainer || document.body;
     // 创建场景
     this.createScene();
-    // 创建灯光
-    this.createLights();
     // 性能监控插件
     this.initStats();
     // 物体添加
     this.addObjs();
     // 效果器
-    this.createEffect()
+    this.createEffect();
     // 轨道控制插件（鼠标拖拽视角、缩放等）
     this.orbitControls = new OrbitControls(
       this.camera,
@@ -43,13 +47,12 @@ class ThreeDWorld {
     this.WIDTH = window.innerWidth;
     // 创建场景
     this.scene = new THREE.Scene();
-    // 在场景中添加雾的效果，参数分别代表‘雾的颜色’、‘开始雾化的视线距离’、刚好雾化至看不见的视线距离’
-    this.scene.fog = new THREE.Fog(0x05050c, 1, 600);
+    this.scene.fog = new THREE.Fog(0x05050c, 0.001);
     // 创建相机
     let aspectRatio = this.WIDTH / this.HEIGHT;
     let fieldOfView = 60;
-    let nearPlane = 1;
-    let farPlane = 10000;
+    let nearPlane = 0.1;
+    let farPlane = 1000;
     /**
      * PerspectiveCamera 透视相机
      * @param fieldOfView 视角
@@ -65,9 +68,11 @@ class ThreeDWorld {
     );
 
     // 设置相机的位置
-    this.camera.position.x = 0;
-    this.camera.position.z = 150;
+    const axesHelper = new THREE.AxesHelper(50);
+    this.scene.add(axesHelper);
+    this.camera.position.x = -150;
     this.camera.position.y = 0;
+    this.camera.position.z = 90;
     // 创建渲染器
     this.renderer = new THREE.WebGLRenderer({
       // 在 css 中设置背景色透明显示渐变色
@@ -76,7 +81,7 @@ class ThreeDWorld {
       antialias: true,
     });
     // 自动清理，解决 bloomPass 效果器冲突
-    this.renderer.autoClear = false
+    this.renderer.autoClear = false;
     // 渲染背景颜色同雾化的颜色
     this.renderer.setClearColor(this.scene.fog.color);
     // 定义渲染器的尺寸；在这里它会填满整个屏幕
@@ -104,42 +109,6 @@ class ThreeDWorld {
     this.camera.aspect = this.WIDTH / this.HEIGHT;
     this.camera.updateProjectionMatrix();
   }
-  createLights() {
-    // 户外光源
-    // 第一个参数是天空的颜色，第二个参数是地上的颜色，第三个参数是光源的强度
-    this.hemisphereLight = new THREE.HemisphereLight(0xaaaaaa, 0x000000, 0.9);
-
-    // 环境光源
-    this.ambientLight = new THREE.AmbientLight(0xdc8874, 0.2);
-
-    // 方向光是从一个特定的方向的照射
-    // 类似太阳，即所有光源是平行的
-    // 第一个参数是关系颜色，第二个参数是光源强度
-    this.shadowLight = new THREE.DirectionalLight(0xffffff, 0.9);
-
-    // 设置光源的位置方向
-    this.shadowLight.position.set(50, 50, 50);
-
-    // 开启光源投影
-    this.shadowLight.castShadow = true;
-
-    // 定义可见域的投射阴影
-    this.shadowLight.shadow.camera.left = -400;
-    this.shadowLight.shadow.camera.right = 400;
-    this.shadowLight.shadow.camera.top = 400;
-    this.shadowLight.shadow.camera.bottom = -400;
-    this.shadowLight.shadow.camera.near = 1;
-    this.shadowLight.shadow.camera.far = 1000;
-
-    // 定义阴影的分辨率；虽然分辨率越高越好，但是需要付出更加昂贵的代价维持高性能的表现。
-    this.shadowLight.shadow.mapSize.width = 2048;
-    this.shadowLight.shadow.mapSize.height = 2048;
-
-    // 为了使这些光源呈现效果，需要将它们添加到场景中
-    this.scene.add(this.hemisphereLight);
-    this.scene.add(this.shadowLight);
-    this.scene.add(this.ambientLight);
-  }
   initStats() {
     this.stats = new Stats();
     // 将性能监控屏区显示在左上角
@@ -149,9 +118,21 @@ class ThreeDWorld {
     this.stats.domElement.style.zIndex = 100;
     this.container.appendChild(this.stats.domElement);
   }
+  // 读取模型函数
+  loader(arr) {
+    let objLoader = new OBJLoader();
+    let promiseArr = arr.map((path) => {
+      return new Promise(function (resolve) {
+        objLoader.load(path, (object) => {
+          resolve(object);
+        });
+      });
+    });
+    return Promise.all(promiseArr);
+  }
   // 物体添加 核心函数
   addObjs() {
-    const loader = new OBJLoader();
+    // const loader = new OBJLoader();
     let pointMaterial = new THREE.PointsMaterial({
       // 粒子颜色
       color: 0xffffff,
@@ -178,54 +159,185 @@ class ThreeDWorld {
     const points = new THREE.Points(geometry, pointMaterial);
     this.scene.add(points);
     // 读取模型
-    loader.load(require("../../models/static/turing.obj"), (obj) => {
-      // console.log(obj);
-      // this.scene.add(obj);
-      for (const i of obj.children) {
-        console.log(i);
-        const pointGeometry = i.geometry
-        // pointGeometry.scale(800, 800, 800)
-        const Point = new THREE.Points(pointGeometry, pointMaterial)
-        this.scene.add(Point)
-      }
-      const startPositions = geometry.getAttribute("position");
-      const destPosition = obj.children[0].geometry.getAttribute("position");
-      for (let i = 0; i < startPositions.count; i++) {
-        const tween = new Tween.Tween(startPositions.array);
-        const cur = i % destPosition.count;
-        tween.to(
-          {
-            [i * 3]: destPosition.array[cur * 3],
-            [i * 3 + 1]: destPosition.array[cur * 3 + 1],
-            [i * 3 + 2]: destPosition.array[cur * 3 + 2],
-          },
-          3000 * Math.random()
-        );
-        tween.easing(Tween.Easing.Exponential.In);
-        tween.delay(3000);
-
-        tween.start();
-
-        tween.onUpdate(() => {
-          startPositions.needsUpdate = true;
-        });
-      }
+    this.loader(_MODEL_PATH_).then((obj) => {
+      const a = obj[0].children[0].geometry;
+      const b = obj[1].children[0].geometry;
+      // console.log(a);\
+      // 创建粒子系统
+      let particleSystem = new THREE.Points(a, pointMaterial);
+      // 加入场景
+      this.scene.add(particleSystem);
+      a.scale(1.2, 1.2, 1.2);
+      a.center();
+      a.translate(30, 0, -100);
+      this.addPartices(a, points.geometry);
     });
   }
+  toBufferGeometry(geometry) {
+    if (geometry.type === "BufferGeometry") return geometry;
+    return new THREE.BufferGeometry.fromGeometry(geometry);
+  }
+
   createEffect() {
-    this.composer = new EffectComposer(this.renderer)
-    const renderPass = new RenderPass(this.scene, this.camera)
-    const bloomPass = new BloomPass(0.75)
-    const filmPass = new FilmPass(0.5, 0.5, 1500, false)
-    const shaderPass = new ShaderPass(FocusShader)
+    this.composer = new EffectComposer(this.renderer);
+    const renderPass = new RenderPass(this.scene, this.camera);
+    const bloomPass = new BloomPass(0.75);
+    const filmPass = new FilmPass(0.5, 0.5, 1500, false);
+    const shaderPass = new ShaderPass(FocusShader);
     shaderPass.uniforms.screenWidth.value = window.innerWidth;
     shaderPass.uniforms.screenHeight.value = window.innerHeight;
-    shaderPass.renderToScreen = true
+    shaderPass.renderToScreen = true;
 
-    this.composer.addPass(renderPass)
-    this.composer.addPass(bloomPass)
-    this.composer.addPass(filmPass)
-    this.composer.addPass(shaderPass)
+    this.composer.addPass(renderPass);
+    this.composer.addPass(bloomPass);
+    this.composer.addPass(filmPass);
+    // this.composer.addPass(shaderPass);
+  }
+  addPartices(obj1, obj2) {
+    obj1 = this.toBufferGeometry(obj1);
+    obj2 = this.toBufferGeometry(obj2);
+    let moreObj = obj1;
+    let lessObj = obj2;
+    // 找到顶点数量较多的模型
+    if (
+      obj2.attributes.position.array.length >
+      obj1.attributes.position.array.length
+    ) {
+      [moreObj, lessObj] = [lessObj, moreObj];
+    }
+    let morePos = moreObj.attributes.position.array;
+    let lessPos = lessObj.attributes.position.array;
+    let moreLen = morePos.length;
+    let lessLen = lessPos.length;
+    // 根据最大的顶点数开辟数组空间，同于存放顶点较少的模型顶点数据
+    let position2 = new Float32Array(moreLen);
+    // 先把顶点较少的模型顶点坐标放进数组
+    position2.set(lessPos);
+    // 剩余空间重复赋值
+    for (let i = lessLen, j = 0; i < moreLen; i++, j++) {
+      j %= lessLen;
+      position2[i] = lessPos[j];
+      position2[i + 1] = lessPos[j + 1];
+      position2[i + 2] = lessPos[j + 2];
+    }
+    let sizes = new Float32Array(moreLen);
+    for (let i = 0; i < moreLen; i++) {
+      sizes[i] = 4;
+    }
+    // 挂载属性值
+    moreObj.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    moreObj.setAttribute("position2", new THREE.BufferAttribute(position2, 3));
+    // 传递给shader共享的的属性值
+
+    let uniforms = {
+      val: {
+        value: 1.0,
+      },
+      // 顶点颜色
+      color: {
+        type: "v3",
+        value: new THREE.Color(0xffffff),
+      },
+      // 传递顶点贴图
+      texture: {
+        // value: new THREE.TextureLoader().load(g),
+        // value: this.getTexture(),
+      },
+    };
+
+    // 着色器材料
+    let shaderMaterial = new THREE.ShaderMaterial({
+      // 传递给shader的属性
+      uniforms: uniforms,
+      // 获取顶点着色器代码
+      vertexShader: document.getElementById("vertexshader").textContent,
+      // 获取片元着色器代码
+      fragmentShader: document.getElementById("fragmentshader").textContent,
+      // 渲染粒子时的融合模式
+      blending: THREE.AdditiveBlending,
+      // 关闭深度测试
+      depthTest: false,
+      // 开启透明度
+      transparent: true,
+    });
+    let pointMaterial = new THREE.PointsMaterial({
+      // 粒子颜色
+      color: 0xffffff,
+      //粒子大小
+      size: 1,
+      //false:粒子尺寸相同 ;true：取决于摄像头远近
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 1,
+      map: new THREE.TextureLoader().load(g),
+    });
+    // 创建粒子系统
+    console.log(shaderMaterial);
+    let particleSystem = new THREE.Points(moreObj, shaderMaterial);
+    let pos = {
+      val: 1,
+    };
+    // 粒子动画
+    let tween = new Tween.Tween(pos)
+      .to(
+        {
+          val: 0,
+        },
+        1500
+      )
+      .easing(Tween.Easing.Quadratic.InOut)
+      .delay(3000)
+      .onUpdate(updateCallback);
+    let tweenBack = new Tween.Tween(pos)
+      .to(
+        {
+          val: 1,
+        },
+        1500
+      )
+      .easing(Tween.Easing.Quadratic.InOut)
+      .delay(3000)
+      .onUpdate(updateCallback);
+    tween.chain(tweenBack);
+    tweenBack.chain(tween);
+    tween.start();
+    // 动画持续更新的回调函数
+    function updateCallback() {
+      particleSystem.material.uniforms.val.value = pos.val;
+    }
+    this.scene.add(particleSystem);
+    this.particleSystem = particleSystem;
+  }
+  getTexture(canvasSize = 64) {
+    let canvas = document.createElement("canvas");
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    canvas.style.background = "transparent";
+    let context = canvas.getContext("2d");
+    let gradient = context.createRadialGradient(
+      canvas.width / 2,
+      canvas.height / 2,
+      canvas.width / 8,
+      canvas.width / 2,
+      canvas.height / 2,
+      canvas.width / 2
+    );
+    gradient.addColorStop(0, "#fff");
+    gradient.addColorStop(1, "transparent");
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(
+      canvas.width / 2,
+      canvas.height / 2,
+      canvas.width / 2,
+      0,
+      Math.PI * 2,
+      true
+    );
+    context.fill();
+    let texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+    return texture;
   }
   // 循环更新渲染
   update() {
@@ -233,11 +345,16 @@ class ThreeDWorld {
     Tween.update();
     // 性能监测插件
     this.stats.update();
+    if (this.particleSystem) {
+      let bufferObj = this.particleSystem.geometry;
+      // this.particleSystem.rotation.y += 0.005;
+      bufferObj.attributes.size.needsUpdate = true;
+    }
     // 渲染器执行渲染
     // this.renderer.render(this.scene, this.camera);
     // 效果器执行渲染，如果不需要效果器请使用上方的渲染模式
     this.composer.render(this.scene, this.camera);
-    // this.scene.rotation.y += 0.005;
+    // this.scene.rotation.y += 0.001;
     // 循环调用
     requestAnimationFrame(() => {
       this.update();
@@ -246,15 +363,35 @@ class ThreeDWorld {
 }
 
 const Particles = () => {
+  const [active, setActive] = useState(false);
+
   useEffect(() => {
+    eventBus.on("message", (text) => {
+      console.log(text);
+      setInterval(() => {
+        setActive(true);
+      }, 2000);
+    });
     const onLoad = () => {
-      console.log(2);
       new ThreeDWorld(document.getElementById("world"));
-      console.log(1);
     };
     onLoad();
   }, []);
 
-  return <div id="world"></div>;
+  return (
+    <div>
+      <div className="fatherBox">
+        <div className="imgBox">
+          <img
+            className="miniLogo"
+            src={require("../../images/TR_logo.png")}
+            alt=""
+          />
+        </div>
+      </div>
+
+      <div id="world"></div>
+    </div>
+  );
 };
 export default Particles;
