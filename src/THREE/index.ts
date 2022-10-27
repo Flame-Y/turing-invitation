@@ -380,23 +380,23 @@ class ParticleSystem {
 
     if (name === "wave") {
       wave = true;
-      let vertices = item?.attributes.position.array;
-      let scales = item?.attributes.scale.array;
-      let i = 0,
-        j = 0;
-      for (let ix = 0; ix < 50; ix++) {
-        for (let iy = 0; iy < 50; iy++) {
-          vertices[i + 1] =
-            Math.sin((ix + this.test) * 0.3) * 50 +
-            Math.sin((iy + this.test) * 0.5) * 50;
-          scales[j] =
-            (Math.sin((ix + this.test) * 0.3) + 1) * 20 +
-            (Math.sin((iy + this.test) * 0.5) + 1) * 20;
-          i += 3;
-          j++;
-        }
-        // count += 0.1;
-      }
+      // let vertices = item?.getAttribute('position');
+      // let scales = item?.attributes.scale.array;
+      // let i = 0,
+      //   j = 0;
+      // for (let ix = 0; ix < 50; ix++) {
+      //   for (let iy = 0; iy < 50; iy++) {
+      //     vertices.array[i + 1] =
+      //       Math.sin((ix + this.test) * 0.3) * 50 +
+      //       Math.sin((iy + this.test) * 0.5) * 50;
+      //     // scales[j] =
+      //     //   (Math.sin((ix + this.test) * 0.3) + 1) * 20 +
+      //     //   (Math.sin((iy + this.test) * 0.5) + 1) * 20;
+      //     i += 3;
+      //     j++;
+      //   }
+      //   // count += 0.1;
+      // }
 
       // item!.attributes.position.needsUpdate = true;
       // item!.attributes.scale.needsUpdate = true;
@@ -514,7 +514,20 @@ class ParticleSystem {
   private update(t: number) {
     if (wave) {
       this.test += 0.1;
-      // console.log(this.test);
+      const item = this.AnimateEffectParticle?.geometry
+
+      let vertices = item?.getAttribute('position')
+      let i = 0,
+        j = 0;
+      for (let ix = 0; ix < 50; ix++) {
+        for (let iy = 0; iy < 50; iy++) {
+          vertices!.setY(i, Math.sin((ix + this.test) * 0.3) * 50 +
+            Math.sin((iy + this.test) * 0.5) * 50)
+          i++;
+          j++;
+        }
+      }
+      vertices!.needsUpdate = true
     }
 
     Tween.update(); // 动画插件
