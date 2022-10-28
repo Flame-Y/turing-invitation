@@ -18,10 +18,8 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 import { throttle } from "lodash";
 
 import g from "@/assets/images/gradient.png";
-import { ParticleModelProps } from "@/declare/THREE";
+import { ParticleModelProps, TWEEN_POINT } from "@/declare/THREE";
 import VerticesDuplicateRemove from "@/utils/VerticesDuplicateRemove.js";
-import { count } from "console";
-import { threadId } from "worker_threads";
 
 let wave = false;
 
@@ -30,13 +28,6 @@ function getRangeRandom(e: number, t: number) {
 }
 
 type THREE_POINT = THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
-interface TWEEN_POINT {
-  x: number;
-  y: number;
-  z: number;
-  tweenctx?: TweenProps<{ x: number; y: number; z: number }>;
-}
-
 class ParticleSystem {
   private readonly CanvasWrapper: HTMLDivElement;
   private readonly modelList: Map<string, THREE.BufferGeometry>;
@@ -69,6 +60,7 @@ class ParticleSystem {
   private hadListenMouseMove?: boolean;
   private MainParticleGroup?: TweenGroup;
   private readonly defaultLoader: OBJLoader;
+  /** 表演粒子 tween 实例数组 */
   private readonly ParticleAnimeMap: TWEEN_POINT[];
   /** 模型数组 */
   public Models: Map<string, ParticleModelProps>;
@@ -334,7 +326,8 @@ class ParticleSystem {
       const p: TWEEN_POINT = {
         x,
         y,
-        z
+        z,
+        isPlaying: true
       };
       p.tweenctx = new Tween.Tween(p, this.MainParticleGroup)
         .easing(Tween.Easing.Exponential.In)
@@ -346,6 +339,16 @@ class ParticleSystem {
           o.tweenctx!._valuesStart.y = o.y;
           // @ts-expect-error
           o.tweenctx!._valuesStart.z = o.z;
+          o.isPlaying = false;
+        })
+        .onStart((o) => {
+          // @ts-expect-error
+          o.tweenctx!._valuesStart.x = o.x;
+          // @ts-expect-error
+          o.tweenctx!._valuesStart.y = o.y;
+          // @ts-expect-error
+          o.tweenctx!._valuesStart.z = o.z;
+          o.isPlaying = true;
         });
       this.ParticleAnimeMap[i] = p;
     }
@@ -376,31 +379,10 @@ class ParticleSystem {
    */
   ChangeModel(name: string, time: number = this.AnimateDuration) {
     const item = this.modelList.get(name);
-    // console.log(item);
 
     if (name === "wave") {
       wave = true;
-      // let vertices = item?.getAttribute('position');
-      // let scales = item?.attributes.scale.array;
-      // let i = 0,
-      //   j = 0;
-      // for (let ix = 0; ix < 50; ix++) {
-      //   for (let iy = 0; iy < 50; iy++) {
-      //     vertices.array[i + 1] =
-      //       Math.sin((ix + this.test) * 0.3) * 50 +
-      //       Math.sin((iy + this.test) * 0.5) * 50;
-      //     // scales[j] =
-      //     //   (Math.sin((ix + this.test) * 0.3) + 1) * 20 +
-      //     //   (Math.sin((iy + this.test) * 0.5) + 1) * 20;
-      //     i += 3;
-      //     j++;
-      //   }
-      //   // count += 0.1;
-      // }
-
-      // item!.attributes.position.needsUpdate = true;
-      // item!.attributes.scale.needsUpdate = true;
-    }
+    } else wave = false;
     if (item == null) {
       console.warn(
         "未找到指定名字的模型，改变操作已终止！传入的名字：" + name.toString()
@@ -420,6 +402,8 @@ class ParticleSystem {
     // 停止当前所有动画
     for (let i = 0; i < this.maxParticlesCount; i++) {
       const p = this.ParticleAnimeMap[i]?.tweenctx;
+      this.ParticleAnimeMap[i]!.isPlaying = true;
+
       const cur = i % targetModel.count;
       p?.stop()
         .to(
@@ -443,6 +427,7 @@ class ParticleSystem {
           o.tweenctx!._valuesStart.y = o.y;
           // @ts-expect-error
           o.tweenctx!._valuesStart.z = o.z;
+          o.isPlaying = false;
         })
         .start();
     }
@@ -513,21 +498,24 @@ class ParticleSystem {
   // 循环更新渲染
   private update(t: number) {
     if (wave) {
-      this.test += 0.1;
-      const item = this.AnimateEffectParticle?.geometry
+      const item = this.AnimateEffectParticle?.geometry;
+      let vertices = item?.getAttribute("position");
+      const p = this.ParticleAnimeMap;
 
-      let vertices = item?.getAttribute('position')
-      let i = 0,
-        j = 0;
-      for (let ix = 0; ix < 50; ix++) {
-        for (let iy = 0; iy < 50; iy++) {
-          vertices!.setY(i, Math.sin((ix + this.test) * 0.3) * 50 +
-            Math.sin((iy + this.test) * 0.5) * 50)
-          i++;
-          j++;
+      p.forEach((val, i) => {
+        if (val.isPlaying === false) {
+          vertices!.setY(
+            i,
+            Math.sin((i + this.test) * 0.3) * 50 +
+              Math.sin((i + this.test) * 0.5) * 50
+          );
+          val.y = vertices!.getY(i);
         }
-      }
-      vertices!.needsUpdate = true
+      });
+      this.test += 0.1;
+      vertices!.needsUpdate = true;
+    } else {
+      this.test = 0;
     }
 
     Tween.update(); // 动画插件
@@ -539,6 +527,15 @@ class ParticleSystem {
     this.stats?.update();
     // 场景旋转检测
     this._updateRotation();
+    // 模型 update 钩子更新
+    this.Models.forEach((val) => {
+      val.name === this.CurrentUseModelName &&
+        val.onAnimationFrameUpdate != null &&
+        val.onAnimationFrameUpdate(
+          this.AnimateEffectParticle!,
+          this.ParticleAnimeMap
+        );
+    });
     // addons 执行更新
     this.addons?.forEach((val) => {
       val.update();

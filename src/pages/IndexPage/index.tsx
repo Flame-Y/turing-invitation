@@ -188,7 +188,6 @@ function IndexPage() {
 
     let i = 0,
       j = 0;
-    let count = 0;
     const TextureLoader = new THREE.TextureLoader();
     const material = new THREE.PointsMaterial({
       // 粒子大小
@@ -205,9 +204,8 @@ function IndexPage() {
     for (var ix = 0; ix < AMOUNTX; ix++) {
       for (var iy = 0; iy < AMOUNTY; iy++) {
         vertices[i] = ix * SEPARATION - (AMOUNTX * SEPARATION) / 2; // x
-        vertices[i + 1] = 0; // y
+        vertices[i + 1] = -300; // y
         vertices[i + 2] = iy * SEPARATION - (AMOUNTY * SEPARATION) / 2; // z
-        scales[j] = 1;
         i += 3;
         j++;
       }
@@ -221,9 +219,8 @@ function IndexPage() {
     geometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
     const points = new THREE.Points(geometry, material);
     const wave = points.geometry;
-    console.log(wave);
+    // console.log(wave);
     wave.attributes.position.needsUpdate = true
-    wave.attributes.scale.needsUpdate = true
     // wave.translate(0, -500, 0)
     // wave.rotateY(-30)
     Models.push({
