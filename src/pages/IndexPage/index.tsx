@@ -10,7 +10,6 @@ import g from "@/assets/images/gradient.png";
 import Tween from "@tweenjs/tween.js";
 import eventBus from "../../util/event";
 
-// import { Swiper, SwiperSlide } from 'swiper/react';
 import { Swiper, SwiperOptions, Mousewheel } from 'swiper';
 import 'swiper/css';
 
@@ -68,12 +67,12 @@ function IndexPage() {
   const Models: ParticleModelProps[] = [
     {
       name: "monitor",
-      path: new URL("../../THREE/models/examples/备选2.obj", import.meta.url)
+      path: new URL("../../THREE/models/examples/monitor.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
         const s = 2000;
         Geometry.scale(s, s, s);
-        Geometry.translate(-600, 0, 0);
+        Geometry.translate(-500, 0, 0);
       }
     },
     {
@@ -94,11 +93,11 @@ function IndexPage() {
     },
     {
       name: "balance",
-      path: new URL("../../THREE/models/examples/天平.obj", import.meta.url)
+      path: new URL("../../THREE/models/examples/balance.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        Geometry.scale(500, 500, 500);
-        Geometry.translate(900, -500, 0);
+        Geometry.scale(300, 300, 300);
+        Geometry.translate(800, -500, 0);
       }
     },
     {
@@ -106,7 +105,7 @@ function IndexPage() {
       path: new URL("../../THREE/models/examples/turing8.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        const s = 9;
+        const s = 8;
         Geometry.scale(s, s, s);
         Geometry.center();
         // Geometry.rotateY(-30);
@@ -146,7 +145,7 @@ function IndexPage() {
     }
   });
 
-  windowAddMouseWheel();
+  // windowAddMouseWheel();
   function windowAddMouseWheel() {
     const scrollFunc = function (e: WheelEvent) {
       e = e ?? window.event;
@@ -247,21 +246,17 @@ function IndexPage() {
     const swiperParams: SwiperOptions = {
       modules: [Mousewheel],
       direction: 'vertical',
-      // slidesPerView: 3,
-      // spaceBetween: 50,
-      // speed: 500,
-      mousewheel: true,
+      mousewheel: {
+        invert: false,
+        thresholdTime: 2000
+      },
+      speed: 500,
       height: window.innerHeight,
       on: {
-        // transitionStart: function () {
-        //   // console.log(1);
-
-        // },
-        slideChangeTransitionStart: function () {
-          console.log(1);
-
+        slideChangeTransitionStart: function (swiper) {
+          console.log(swiper.activeIndex);
+          window.changeModel(modelList[swiper.activeIndex]);
         },
-
       }
     };
 
