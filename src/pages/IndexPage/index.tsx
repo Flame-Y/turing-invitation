@@ -9,7 +9,10 @@ import g from "@/assets/images/gradient.png";
 
 import Tween from "@tweenjs/tween.js";
 import eventBus from "../../util/event";
-import { render } from "react-dom";
+
+// import { Swiper, SwiperSlide } from 'swiper/react';
+import { Swiper, SwiperOptions, Mousewheel } from 'swiper';
+import 'swiper/css';
 
 function IndexPage() {
   const wrapper = useRef<HTMLDivElement | null>(null);
@@ -61,26 +64,25 @@ function IndexPage() {
       Point.position.z = -1.2 * al;
     }
   });
-  const [inwave, setInwave] = useState(false);
 
-  const scaleNum = 600;
   const Models: ParticleModelProps[] = [
     {
-      name: "cube",
-      path: new URL("../../THREE/models/examples/cube.obj", import.meta.url)
+      name: "monitor",
+      path: new URL("../../THREE/models/examples/备选2.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        const s = 400;
+        const s = 2000;
         Geometry.scale(s, s, s);
-        Geometry.translate(500, 0, 0);
+        Geometry.translate(-600, 0, 0);
       }
     },
     {
-      name: "ball",
-      path: new URL("../../THREE/models/examples/ball.obj", import.meta.url)
+      name: "atom",
+      path: new URL("../../THREE/models/examples/atom.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        Geometry.scale(scaleNum, scaleNum, scaleNum);
+        Geometry.scale(300, 300, 300);
+        // Geometry.scale(scaleNum, scaleNum, scaleNum);
         Geometry.translate(-600, 0, -100);
       },
       onEnterStart(PointGeometry) {
@@ -91,23 +93,12 @@ function IndexPage() {
       }
     },
     {
-      name: "AngularSphere",
-      path: new URL(
-        "../../THREE/models/examples/AngularSphere.obj",
-        import.meta.url
-      ).href,
-      onLoadComplete(Geometry) {
-        Geometry.scale(scaleNum, scaleNum, scaleNum);
-        Geometry.translate(600, 0, -100);
-      }
-    },
-    {
-      name: "cone",
-      path: new URL("../../THREE/models/examples/cone.obj", import.meta.url)
+      name: "balance",
+      path: new URL("../../THREE/models/examples/天平.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        Geometry.scale(scaleNum, scaleNum, scaleNum);
-        Geometry.translate(-600, 100, -100);
+        Geometry.scale(500, 500, 500);
+        Geometry.translate(900, -500, 0);
       }
     },
     {
@@ -128,7 +119,8 @@ function IndexPage() {
       MainParticle.ChangeModel(name);
     }
   };
-
+  const modelList = ['turing', 'monitor', 'atom', 'balance', 'wave']
+  let i = 0;
   const listener = new THREE.AudioListener();
 
   // 创建一个全局 audio 源
@@ -157,22 +149,24 @@ function IndexPage() {
   windowAddMouseWheel();
   function windowAddMouseWheel() {
     const scrollFunc = function (e: WheelEvent) {
-      console.log(e);
-
       e = e ?? window.event;
       console.log(e.deltaY);
 
       if (e.deltaY !== 0) {
         if (e.deltaY > 0) {
           // 当滑轮向上滚动时
-          console.log("页面向下");
-          window.changeModel("turing");
+          if (i <= 3)
+            i++
+          else return
         }
         if (e.deltaY < 0) {
           // 当滑轮向下滚动时
-          window.changeModel("ball");
-          console.log("页面向上");
+          if (i > 0)
+            i--
+          else return
         }
+        window.changeModel(modelList[i]);
+
       }
     };
     document.onmousewheel = scrollFunc;
@@ -249,10 +243,35 @@ function IndexPage() {
       }
     });
   }
+  function swiperInit() {
+    const swiperParams: SwiperOptions = {
+      modules: [Mousewheel],
+      direction: 'vertical',
+      // slidesPerView: 3,
+      // spaceBetween: 50,
+      // speed: 500,
+      mousewheel: true,
+      height: window.innerHeight,
+      on: {
+        // transitionStart: function () {
+        //   // console.log(1);
 
+        // },
+        slideChangeTransitionStart: function () {
+          console.log(1);
+
+        },
+
+      }
+    };
+
+    const swiper = new Swiper('.swiper', swiperParams);
+  }
   const [active, setActive] = useState(true);
 
+
   useEffect(() => {
+    swiperInit()
     testInit();
     eventBus.on("message", (text) => {
       setInterval(() => {
@@ -271,7 +290,7 @@ function IndexPage() {
             .easing(Tween.Easing.Quintic.Out)
             .start();
           setTimeout(() => {
-            MainParticle?.ChangeModel("wave", 2000);
+            MainParticle?.ChangeModel("turing", 2000);
           }, 2500);
           MainParticle?.ListenMouseMove();
         }
@@ -281,6 +300,21 @@ function IndexPage() {
 
   return (
     <div className={`${Styles.index_page} ${active ? "" : Styles.hidden} `}>
+      <div className={Styles.container}>
+        <div className={`swiper ${Styles.test}`}>
+          <div className="swiper-wrapper">
+            <div className={`swiper-slide ${Styles.t1}`}>文本1</div>
+            <div className={`swiper-slide ${Styles.t2}`}>文本2</div>
+            <div className={`swiper-slide ${Styles.t3}`}>Those who can imagine anything,<br></br><br></br><br></br>
+              can create the impossible.</div>
+            <div className={`swiper-slide ${Styles.t4}`}><p>我们分担寒潮、风雷、霹雳<br></br><br></br><br></br>
+              我们共享雾霭、流岚、虹霓。</p> </div>
+            <div className={`swiper-slide ${Styles.t2}`}>拥有海大的现在<br></br><br></br><br></br>拥抱大海的未来</div>
+
+          </div>
+        </div>
+
+      </div>
       <div className={Styles.canvas_wrapper} ref={wrapper}></div>
     </div>
   );

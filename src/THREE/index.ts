@@ -123,10 +123,10 @@ class ParticleSystem {
     // 效果器
     this.createEffect();
     // 轨道控制插件（鼠标拖拽视角、缩放等）
-    this.orbitControls = new OrbitControls(
-      this.camera!,
-      this.renderer!.domElement
-    );
+    // this.orbitControls = new OrbitControls(
+    //   this.camera!,
+    //   this.renderer!.domElement
+    // );
     this.mouseK = 0;
     this.mouseV = 0;
     this.test = 0;
