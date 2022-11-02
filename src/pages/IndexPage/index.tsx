@@ -13,6 +13,8 @@ import eventBus from "../../util/event";
 import { Swiper, SwiperOptions, Mousewheel } from 'swiper';
 import 'swiper/css';
 
+let hasInit = false
+
 function IndexPage() {
   const wrapper = useRef<HTMLDivElement | null>(null);
   let MainParticle: ParticleSystem | null = null;
@@ -211,7 +213,7 @@ function IndexPage() {
       on: {
         slideChangeTransitionStart: function (swiper) {
           // console.log(swiper.activeIndex);
-          window.changeModel(modelList[swiper.activeIndex]);
+          MainParticle?.ChangeModel(modelList[swiper.activeIndex]);
         },
       }
     };
@@ -222,8 +224,6 @@ function IndexPage() {
 
 
   useEffect(() => {
-    swiperInit()
-    testInit();
     eventBus.on("message", (url, itemsLoaded, itemsTotal) => {
       console.log(
         "Loading file: " +
@@ -235,7 +235,10 @@ function IndexPage() {
         " files."
       );
     });
-    if (MainParticle == null && wrapper.current != null) {
+    if (!hasInit && MainParticle == null && wrapper.current != null) {
+      hasInit = true
+      swiperInit()
+      testInit();
       MainParticle = new ParticleSystem({
         CanvasWrapper: wrapper.current,
         Models,
