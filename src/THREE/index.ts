@@ -7,6 +7,7 @@ import { BloomPass } from "three/examples/jsm/postprocessing/BloomPass";
 import { FilmPass } from "three/examples/jsm/postprocessing/FilmPass";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
 import { FocusShader } from "three/examples/jsm/shaders/FocusShader";
+import eventBus from "../util/event";
 
 import Tween from "@tweenjs/tween.js";
 import type {
@@ -91,6 +92,20 @@ class ParticleSystem {
     ) => void;
   }) {
     const { AnimateDuration, onModelsFinishedLoad } = options;
+    const manager = new THREE.LoadingManager();
+    manager.onStart = function (url, itemsLoaded, itemsTotal) {};
+
+    manager.onLoad = function () {
+      console.log("Loading complete!");
+    };
+
+    manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+      eventBus.emit("message", url, itemsLoaded, itemsTotal);
+    };
+
+    manager.onError = function (url) {
+      console.log("There was an error loading " + url);
+    };
     this.CanvasWrapper = options.CanvasWrapper;
     this.addons = options.addons != null ? options.addons : [];
     this.Models = new Map<string, ParticleModelProps>();
@@ -100,7 +115,7 @@ class ParticleSystem {
     this.AnimateDuration =
       typeof AnimateDuration === "number" ? AnimateDuration : 1500;
     this.onModelsFinishedLoad = onModelsFinishedLoad;
-    this.defaultLoader = new OBJLoader();
+    this.defaultLoader = new OBJLoader(manager);
     /** 粒子Map */
     this.ParticleAnimeMap = [];
     /* 宽高 */
@@ -401,11 +416,15 @@ class ParticleSystem {
     }, time * 2);
     // 停止当前所有动画
     for (let i = 0; i < this.maxParticlesCount; i++) {
-      const p = this.ParticleAnimeMap[i]?.tweenctx;
+      const p = this.ParticleAnimeMap[i];
       this.ParticleAnimeMap[i]!.isPlaying = true;
-
       const cur = i % targetModel.count;
-      p?.stop()
+      // 位置同步，解决 onAnimationFrameUpdate 回调更新时位置错误的问题
+      p.x = sourceModel.getX(i);
+      p.y = sourceModel.getY(i);
+      p.z = sourceModel.getZ(i);
+      p.tweenctx
+        ?.stop()
         .to(
           {
             x: targetModel.array[cur * 3],
@@ -421,13 +440,6 @@ class ParticleSystem {
         })
         .onStop((o) => {
           clearTimeout(TimerId);
-          // @ts-expect-error
-          o.tweenctx!._valuesStart.x = o.x;
-          // @ts-expect-error
-          o.tweenctx!._valuesStart.y = o.y;
-          // @ts-expect-error
-          o.tweenctx!._valuesStart.z = o.z;
-          o.isPlaying = false;
         })
         .start();
     }
@@ -509,7 +521,6 @@ class ParticleSystem {
             Math.sin((i + this.test) * 0.3) * 50 +
               Math.sin((i + this.test) * 0.5) * 50
           );
-          val.y = vertices!.getY(i);
         }
       });
       this.test += 0.1;

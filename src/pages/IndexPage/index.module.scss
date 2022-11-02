@@ -18,23 +18,19 @@
   width: 100%;
   height: 100%;
 }
+
 .test {
   position: relative;
-  // height: 100%;
-  // color: white;
   text-align: center;
   margin: auto;
-}
-.t1 {
-  top: 50vh;
-}
-.t2 {
-  top: 50vh;
-  // left: 50vw;
-}
-.t3 {
-  top: 50vh;
-}
-.t4 {
-  top: 50vh;
+  .t1 {
+    top: 50vh;
+  }
+  .t2 {
+    top: 50vh;
+    // left: 50vw;
+  }
+  .t3 {
+    top: 50vh;
+  }
 }

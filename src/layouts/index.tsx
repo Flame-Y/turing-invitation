@@ -1,13 +1,24 @@
 import * as React from 'react'
 import Styles from './index.module.scss'
 import IndexPage from '@/pages/IndexPage'
-import Envelope from '@/pages/Envelope'
+import Loading from '@/pages/Loading'
+import eventBus from '../util/event'
+import { useState } from 'react'
 
-function Layout() {
+const Layout = () => {
+  const [active, setActive] = useState(false)
+
+  eventBus.on("enter", (text) => {
+    setActive(true)
+  });
   return (
-    <div className={Styles.layout}>
-      {/* <Envelope /> */}
-      <IndexPage />
+    <div >
+      <div className={`${Styles.load} ${active ? Styles.hidden : ''}`}>
+        <Loading />
+      </div>
+      <div className={Styles.page}>
+        <IndexPage />
+      </div>
     </div>
   )
 }

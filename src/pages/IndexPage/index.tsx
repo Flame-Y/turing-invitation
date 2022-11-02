@@ -66,34 +66,8 @@ function IndexPage() {
 
   const Models: ParticleModelProps[] = [
     {
-      name: "monitor",
-      path: new URL("../../THREE/models/examples/monitor.obj", import.meta.url)
-        .href,
-      onLoadComplete(Geometry) {
-        const s = 2000;
-        Geometry.scale(s, s, s);
-        Geometry.translate(-500, 0, 0);
-      }
-    },
-    {
-      name: "atom",
-      path: new URL("../../THREE/models/examples/atom.obj", import.meta.url)
-        .href,
-      onLoadComplete(Geometry) {
-        Geometry.scale(300, 300, 300);
-        // Geometry.scale(scaleNum, scaleNum, scaleNum);
-        Geometry.translate(-600, 0, -100);
-      },
-      onEnterStart(PointGeometry) {
-        console.log("ball enter start");
-      },
-      onEnterEnd(PointGeometry) {
-        console.log("ball enter end");
-      }
-    },
-    {
-      name: "balance",
-      path: new URL("../../THREE/models/examples/balance.obj", import.meta.url)
+      name: "QR-code",
+      path: new URL("../../THREE/models/examples/ball.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
         Geometry.scale(300, 300, 300);
@@ -105,11 +79,10 @@ function IndexPage() {
       path: new URL("../../THREE/models/examples/turing8.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        const s = 8;
+        const s = 7;
         Geometry.scale(s, s, s);
         Geometry.center();
-        // Geometry.rotateY(-30);
-        Geometry.translate(-600, 0, 0)
+        Geometry.translate(0, 100, 0)
       }
     }
   ];
@@ -118,7 +91,7 @@ function IndexPage() {
       MainParticle.ChangeModel(name);
     }
   };
-  const modelList = ['turing', 'monitor', 'atom', 'balance', 'wave']
+  const modelList = ['turing', 'wave', 'QR-code']
   let i = 0;
   const listener = new THREE.AudioListener();
 
@@ -132,7 +105,7 @@ function IndexPage() {
     function (buffer) {
       sound.setBuffer(buffer);
       sound.setLoop(true);
-      sound.setVolume(0.25);
+      sound.setVolume(0.1);
     }
   );
 
@@ -212,7 +185,6 @@ function IndexPage() {
     geometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
     const points = new THREE.Points(geometry, material);
     const wave = points.geometry;
-    // console.log(wave);
     wave.attributes.position.needsUpdate = true
     // wave.translate(0, -500, 0)
     // wave.rotateY(-30)
@@ -221,24 +193,8 @@ function IndexPage() {
       geometry: wave,
       onEnterStart(PointGeometry) {
         console.log("wave enter start");
-        // let vertices = wave.attributes.position.array;
-        // let i = 0,
-        //   j = 0,
-        //   count = 0;
-        // for (let ix = 0; ix < 50; ix++) {
-        //   for (let iy = 0; iy < 50; iy++) {
-        //     vertices[i + 1] =
-        //       Math.sin((ix + count) * 0.3) * 50 +
-        //       Math.sin((iy + count) * 0.5) * 50;
-        //     i += 3;
-        //     j++;
-        //   }
-        //   count += 0.1;
-        // }
       },
       onEnterEnd(PointGeometry) {
-        // console.log("wave enter end");
-
       }
     });
   }
@@ -254,7 +210,7 @@ function IndexPage() {
       height: window.innerHeight,
       on: {
         slideChangeTransitionStart: function (swiper) {
-          console.log(swiper.activeIndex);
+          // console.log(swiper.activeIndex);
           window.changeModel(modelList[swiper.activeIndex]);
         },
       }
@@ -262,16 +218,22 @@ function IndexPage() {
 
     const swiper = new Swiper('.swiper', swiperParams);
   }
-  const [active, setActive] = useState(true);
+  const [active, setActive] = useState(false);
 
 
   useEffect(() => {
     swiperInit()
     testInit();
-    eventBus.on("message", (text) => {
-      setInterval(() => {
-        setActive(true);
-      }, 2000);
+    eventBus.on("message", (url, itemsLoaded, itemsTotal) => {
+      console.log(
+        "Loading file: " +
+        url +
+        ".\nLoaded " +
+        itemsLoaded +
+        " of " +
+        itemsTotal +
+        " files."
+      );
     });
     if (MainParticle == null && wrapper.current != null) {
       MainParticle = new ParticleSystem({
@@ -279,32 +241,35 @@ function IndexPage() {
         Models,
         addons: [Atomsphere1, Atomsphere2, Atomsphere3],
         onModelsFinishedLoad: (point) => {
-          point.rotation.y = -3.14 * 0.8;
-          new Tween.Tween(point.rotation)
-            .to({ y: 0 }, 10000)
-            .easing(Tween.Easing.Quintic.Out)
-            .start();
-          setTimeout(() => {
-            MainParticle?.ChangeModel("turing", 2000);
-          }, 2500);
-          MainParticle?.ListenMouseMove();
+          eventBus.on("enter", (text) => {
+            console.log(text);
+
+            point.rotation.y = -3.14 * 0.8;
+            new Tween.Tween(point.rotation)
+              .to({ y: 0 }, 10000)
+              .easing(Tween.Easing.Quintic.Out)
+              .start();
+            setTimeout(() => {
+              MainParticle?.ChangeModel("turing", 2000);
+            }, 2500);
+            MainParticle?.ListenMouseMove();
+          });
         }
       });
     }
+
   });
 
   return (
-    <div className={`${Styles.index_page} ${active ? "" : Styles.hidden} `}>
+    <div className={Styles.index_page}>
+      {/* <div className={Styles.sound}></div>
+      <div className={Styles.screen}></div> */}
       <div className={Styles.container}>
         <div className={`swiper ${Styles.test}`}>
           <div className="swiper-wrapper">
-            <div className={`swiper-slide ${Styles.t1}`}>文本1</div>
-            <div className={`swiper-slide ${Styles.t2}`}>文本2</div>
-            <div className={`swiper-slide ${Styles.t3}`}>Those who can imagine anything,<br></br><br></br><br></br>
-              can create the impossible.</div>
-            <div className={`swiper-slide ${Styles.t4}`}><p>我们分担寒潮、风雷、霹雳<br></br><br></br><br></br>
-              我们共享雾霭、流岚、虹霓。</p> </div>
-            <div className={`swiper-slide ${Styles.t2}`}>拥有海大的现在<br></br><br></br><br></br>拥抱大海的未来</div>
+            <div className={`swiper-slide ${Styles.t1}`}>恭喜话语</div>
+            <div className={`swiper-slide ${Styles.t2}`}>wave</div>
+            <div className={`swiper-slide ${Styles.t3}`}>二维码</div>
 
           </div>
         </div>
