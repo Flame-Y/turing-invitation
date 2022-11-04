@@ -68,7 +68,7 @@ class ParticleSystem {
   /** 额外插件的数组 */
   public addons?: any[];
   // 函数相关
-  /** 当所有模型加载完成是进行调用 */
+  /** 当所有模型加载完成时进行调用 */
   private readonly onModelsFinishedLoad?: (
     preformPoint: THREE_POINT,
     scene: THREE.Scene
@@ -171,9 +171,6 @@ class ParticleSystem {
     this.camera.position.set(0, 0, 1e3);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    // 坐标轴辅助器
-    const axesHelper = new THREE.AxesHelper(500);
-    this.scene.add(axesHelper);
     // addons 添加
     if (this.addons != null) {
       this.addons.forEach((val) => {
@@ -523,7 +520,7 @@ class ParticleSystem {
           );
         }
       });
-      this.test += 0.1;
+      this.test += 0.05;
       vertices!.needsUpdate = true;
     } else {
       this.test = 0;

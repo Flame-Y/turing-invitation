@@ -1,10 +1,42 @@
 .loading {
+  display: flex;
+  z-index: 114;
+  width: 100vw;
+  height: 100vh;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  background-color: #0a0d1b;
+  color: white;
+  .logo {
+    .logoInside {
+      height: 2rem;
+    }
+  }
+  .name {
+    margin-top: 0.5rem;
+    font-size: 0.5rem;
+  }
+  .progress {
+    margin-top: 0.5rem;
+    font-size: 0.5rem;
+  }
   .enter {
-    // bottom: 1rem;
     position: fixed;
+    left: 50%;
+    bottom: 0;
+    font-size: 0.4rem;
+    padding: 0.16rem 0.5rem;
+    border: 1px solid #fff;
+    border-radius: 10px;
+    background-color: #fff0;
+    transform: translate(-50%, -50%);
+    transition: background-color 0.3s;
     cursor: pointer;
   }
 }
+
 .hidden {
   display: none;
 }
