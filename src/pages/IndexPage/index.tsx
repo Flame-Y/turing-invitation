@@ -16,14 +16,9 @@ import 'swiper/css';
 
 let hasInit = false
 
-function _encode(str: string) {
-  const token = str ? str : ''
+function _decode(str: string) {
   const base64 = new Base64()
-  const result = base64.encode(token + ':')
-  var stateObject = { id: "" };
-  var title = "";
-  history.replaceState(stateObject, title, result);
-  return 'Basic ' + result;
+  return base64.decode(str)
 }
 
 function IndexPage() {
@@ -244,15 +239,19 @@ function IndexPage() {
       cfs.msExitFullscreen();
     }
   }
-  function nameInit() {
-    let str = (window.location.pathname).slice(17)
-    window.localStorage.setItem('name', str)
-    let n = window.localStorage.getItem('name')
-    console.log(n);
 
-    setName(window.decodeURIComponent(str))
-    _encode(str)
+function getUrlPara(name:string) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)","i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r!=null) return (r[2]); return '';
+}
+
+function nameInit() {
+    let decodeName =  window.decodeURIComponent(_decode(getUrlPara('alice')))
+    console.log(decodeName);
+    setName(decodeName)
   }
+
   const [soundActive, setSoundActive] = useState(false)
   const [screenActive, setScreenActive] = useState(false)
   const [pageIndex, setPageIndex] = useState(-1)
