@@ -96,7 +96,7 @@ class ParticleSystem {
     manager.onStart = function (url, itemsLoaded, itemsTotal) {};
 
     manager.onLoad = function () {
-      console.log("Loading complete!");
+      eventBus.emit("complete", 1);
     };
 
     manager.onProgress = function (url, itemsLoaded, itemsTotal) {
