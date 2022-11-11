@@ -24,6 +24,7 @@
   position: fixed;
   top: 1.2rem;
   right: 1rem;
+
   .screen {
     width: 1rem;
     height: 1rem;
@@ -32,6 +33,7 @@
     color: white;
     cursor: pointer;
   }
+
   .sound {
     width: 1rem;
     height: 1rem;
@@ -46,44 +48,64 @@
   text-align: center;
   margin: auto;
   color: white;
+
   .t1mobile {
     top: 13rem;
     font-size: 0.5rem;
+    transition: opacity 2s;
+    opacity: 0;
+
     p {
       margin-bottom: 0.5rem;
     }
+
   }
+
   .t1PC {
     top: 6rem;
     left: 10rem;
     font-size: 1rem;
+    transition: opacity 2s;
+    opacity: 0;
+
     p {
       margin-bottom: 1.3rem;
     }
   }
+
   .t2mobile {
     top: 2.5rem;
     font-size: 0.5rem;
+    transition: opacity 2s;
+    opacity: 0;
+
     p {
       margin-bottom: 0.4rem;
     }
   }
+
   .t2PC {
     top: 2.5rem;
     font-size: 1rem;
+    transition: opacity 2s;
+    opacity: 0;
+
     p {
       margin-bottom: 1rem;
     }
   }
+
   .t3 {
     top: 3rem;
+    transition: opacity 2s;
+    opacity: 0;
   }
 }
+
 .fadein {
-  -webkit-animation: fade-in 5s;
-  animation: fade-in 5s;
-  animation-fill-mode: forwards;
+  opacity: 1 !important;
 }
+
 .arrow {
   position: fixed;
   display: flex;
@@ -93,10 +115,12 @@
   flex-flow: column nowrap;
   width: 100vw;
   bottom: 0.5rem;
+
   svg {
     fill: currentColor;
     color: white;
   }
+
   .arrow1 {
     width: 0.75rem;
     height: 0.75rem;
@@ -104,6 +128,7 @@
     -webkit-animation: blink-1 3s infinite;
     animation: blink-1 3s infinite;
   }
+
   .arrow2 {
     width: 1rem;
     height: 1rem;
@@ -126,11 +151,14 @@
   font-size: 0.3rem;
   font-weight: 700;
   color: white;
+
   .left {
     margin-left: 1.6rem;
   }
+
   .right {
     margin-right: 1.6rem;
+
     a {
       color: white;
       font-weight: 700;
@@ -138,68 +166,86 @@
     }
   }
 }
+
 .hidden {
   display: none;
 }
+
 .op0 {
   opacity: 0;
 }
+
 @-webkit-keyframes blink-1 {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.2;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 @keyframes blink-1 {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.2;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 @-webkit-keyframes blink-2 {
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.2;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 @keyframes blink-2 {
   0% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.2;
   }
 }
+
 @-webkit-keyframes fade-in {
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
 }
+
 @keyframes fade-in {
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }

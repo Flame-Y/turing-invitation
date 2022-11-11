@@ -93,7 +93,7 @@ class ParticleSystem {
   }) {
     const { AnimateDuration, onModelsFinishedLoad } = options;
     const manager = new THREE.LoadingManager();
-    manager.onStart = function (url, itemsLoaded, itemsTotal) {};
+    manager.onStart = function (url, itemsLoaded, itemsTotal) { };
 
     manager.onLoad = function () {
       eventBus.emit("complete", 1);
@@ -516,7 +516,7 @@ class ParticleSystem {
           vertices!.setY(
             i,
             Math.sin((i + this.test) * 0.3) * 50 +
-              Math.sin((i + this.test) * 0.5) * 50
+            Math.sin((i + this.test) * 0.5) * 50 - 200
           );
         }
       });
