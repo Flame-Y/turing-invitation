@@ -1,0 +1,12 @@
+@font-face {
+  font-family: lxgw;
+  src: url("../fonts/lxgw.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+:root {
+  font-family: lxgw;
+}
+p {
+  font-family: lxgw;
+}

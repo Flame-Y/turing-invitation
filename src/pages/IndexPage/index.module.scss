@@ -17,6 +17,7 @@
   width: 100%;
   height: 100%;
 }
+
 .header {
   z-index: 1000;
   display: flex;
@@ -81,6 +82,7 @@
 .fadein {
   -webkit-animation: fade-in 5s;
   animation: fade-in 5s;
+  animation-fill-mode: forwards;
 }
 .arrow {
   position: fixed;
@@ -119,6 +121,8 @@
   position: fixed;
   bottom: 0.6rem;
   width: 100vw;
+  font-family: "Microsoft YaHei", 微软雅黑, Inter, Avenir, Helvetica, Arial,
+    sans-serif;
   font-size: 0.3rem;
   font-weight: 700;
   color: white;
@@ -137,7 +141,9 @@
 .hidden {
   display: none;
 }
-
+.op0 {
+  opacity: 0;
+}
 @-webkit-keyframes blink-1 {
   0% {
     opacity: 1;

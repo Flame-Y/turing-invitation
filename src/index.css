@@ -1,5 +1,6 @@
 :root {
-  font-family: lxgw, Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: lxgw, "Microsoft YaHei", 微软雅黑, Inter, Avenir, Helvetica,
+    Arial, sans-serif;
   line-height: 24px;
   font-weight: 400;
 
@@ -54,15 +55,17 @@ h1 {
     background-color: #ffffff;
   }
 
-  a:hover {
-    color: #747bff;
-  }
-
   button {
     background-color: #f9f9f9;
   }
 }
-@font-face {
+/* @font-face {
   font-family: lxgw;
   src: url("./fonts/lxgw.ttf");
+} */
+@font-face {
+  font-family: lxgw;
+  src: url("./fonts/lxgw.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }

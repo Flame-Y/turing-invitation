@@ -25,7 +25,9 @@ const Loading = () => {
     width: `${num / 2}%`
   }
   const handleOpen = () => {
-    eventBus.emit('enter', 'enter')
+    if (complete)
+      eventBus.emit('enter', 'enter')
+    else console.log('别急');
   }
   return (
     <div className={`${Styles.loading}`}>
