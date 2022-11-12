@@ -52,20 +52,19 @@
   .t1mobile {
     top: 13rem;
     font-size: 0.5rem;
-    transition: opacity 2s;
+    transition: opacity 5s;
     opacity: 0;
 
     p {
       margin-bottom: 0.5rem;
     }
-
   }
 
   .t1PC {
     top: 6rem;
     left: 10rem;
     font-size: 1rem;
-    transition: opacity 2s;
+    transition: opacity 5s;
     opacity: 0;
 
     p {
@@ -76,7 +75,7 @@
   .t2mobile {
     top: 2.5rem;
     font-size: 0.5rem;
-    transition: opacity 2s;
+    transition: opacity 5s;
     opacity: 0;
 
     p {
@@ -87,7 +86,7 @@
   .t2PC {
     top: 2.5rem;
     font-size: 1rem;
-    transition: opacity 2s;
+    transition: opacity 5s;
     opacity: 0;
 
     p {
@@ -97,7 +96,7 @@
 
   .t3 {
     top: 3rem;
-    transition: opacity 2s;
+    transition: opacity 5s;
     opacity: 0;
   }
 }

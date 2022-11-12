@@ -78,7 +78,7 @@ function IndexPage() {
       path: new URL("../../THREE/models/examples/qrcode.obj", import.meta.url)
         .href,
       onLoadComplete(Geometry) {
-        // Geometry.scale(1.2, 1.2, 1.2);
+        Geometry.scale(20, 20, 20);
         Geometry.center();
       }
     },
