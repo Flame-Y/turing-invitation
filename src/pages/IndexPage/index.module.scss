@@ -41,6 +41,10 @@
     color: white;
     cursor: pointer;
   }
+  .smallSound {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
 }
 
 .test {
@@ -50,21 +54,22 @@
   color: white;
 
   .t1mobile {
-    top: 13rem;
+    top: 12.5rem;
+    // bottom: 1rem;
     font-size: 0.5rem;
-    transition: opacity 5s;
+    transition: opacity 7s;
     opacity: 0;
 
     p {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
     }
   }
 
   .t1PC {
-    top: 6rem;
-    left: 10rem;
+    top: 5rem;
+    left: 22vw;
     font-size: 1rem;
-    transition: opacity 5s;
+    transition: opacity 7s;
     opacity: 0;
 
     p {
@@ -79,7 +84,7 @@
     opacity: 0;
 
     p {
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
     }
   }
 

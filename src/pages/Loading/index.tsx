@@ -7,15 +7,6 @@ const Loading = () => {
   const [complete, setComplete] = useState(false)
   const [num, setNum] = useState(0)
   eventBus.on("message", (url, itemsLoaded, itemsTotal) => {
-    console.log(
-      "Loading file: " +
-      url +
-      ".\nLoaded " +
-      itemsLoaded +
-      " of " +
-      itemsTotal +
-      " files."
-    );
     setNum(itemsLoaded / itemsTotal * 100)
   });
   eventBus.on("complete", () => {

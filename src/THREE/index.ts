@@ -93,7 +93,7 @@ class ParticleSystem {
   }) {
     const { AnimateDuration, onModelsFinishedLoad } = options;
     const manager = new THREE.LoadingManager();
-    manager.onStart = function (url, itemsLoaded, itemsTotal) { };
+    manager.onStart = function (url, itemsLoaded, itemsTotal) {};
 
     manager.onLoad = function () {
       eventBus.emit("complete", 1);
@@ -105,6 +105,7 @@ class ParticleSystem {
 
     manager.onError = function (url) {
       console.log("There was an error loading " + url);
+      alert("模型加载错误，请刷新页面!");
     };
     this.CanvasWrapper = options.CanvasWrapper;
     this.addons = options.addons != null ? options.addons : [];
@@ -132,7 +133,7 @@ class ParticleSystem {
     // 创建场景
     this.createScene();
     // 性能监控插件
-    this.initStats();
+    // this.initStats();
     // 载入模型
     this._addModels();
     // 效果器
@@ -516,7 +517,8 @@ class ParticleSystem {
           vertices!.setY(
             i,
             Math.sin((i + this.test) * 0.3) * 50 +
-            Math.sin((i + this.test) * 0.5) * 50 - 200
+              Math.sin((i + this.test) * 0.5) * 50 -
+              200
           );
         }
       });
